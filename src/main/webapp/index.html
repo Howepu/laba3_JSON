@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список студентов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<h1>Список студентов</h1>
+<div class="container py-5">
+    <form id="studentForm" class="px-4">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">Имя:</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="surname" class="form-label">Фамилия:</label>
+                <input type="text" class="form-control" id="surname" name="surname" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="group" class="form-label">Группа:</label>
+                <input type="text" class="form-control" id="group" name="group" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="age" class="form-label">Возраст:</label>
+                <input type="number" class="form-control" id="age" name="age" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="subject" class="form-label">Изучаемый предмет:</label>
+                <input type="text" class="form-control" id="subject" name="subject" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Добавить студента</button>
+    </form>
+</div>
+
+<div id="studentList">
+    <!-- Сюда будет динамически добавляться список студентов -->
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('studentForm');
+        const studentList = document.getElementById('studentList');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const student = {};
+            formData.forEach(function (value, key) {
+                student[key] = value;
+            });
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080/laba3_war_exploded/student', true); // изменено на true для асинхронного режима
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const students = JSON.parse(xhr.responseText);
+                    displayStudents(students);
+                } else {
+                    console.error('Произошла ошибка при обработке запроса:', xhr.statusText);
+                }
+            };
+
+            xhr.send(JSON.stringify(student));
+        });
+
+        function displayStudents(students) {
+            let tableHTML = `
+    <table class="table table-striped table-bordered" style="width: 100%;">
+        <thead class="thead-dark">
+            <tr>
+                <th style="width: 20%;">Имя</th>
+                <th style="width: 20%;">Фамилия</th>
+                <th style="width: 15%;">Группа</th>
+                <th style="width: 10%;">Возраст</th>
+                <th style="width: 35%;">Предмет</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+            students.forEach(function (student) {
+                tableHTML += `
+            <tr>
+                <td>${student.name}</td>
+                <td>${student.surname}</td>
+                <td>${student.group}</td>
+                <td>${student.age}</td>
+                <td>${student.subject}</td>
+            </tr>
+        `;
+            });
+
+            tableHTML += `
+        </tbody>
+    </table>
+    `;
+
+            studentList.innerHTML = tableHTML;
+        }
+
+
+        // Загрузка списка студентов при загрузке страницы
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8080/laba3/student', true); // изменено на true для асинхронного режима
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const students = JSON.parse(xhr.responseText);
+                displayStudents(students);
+            } else {
+                console.error('Произошла ошибка при загрузке списка студентов:', xhr.statusText);
+            }
+        };
+
+        xhr.send();
+    });
+</script>
+</body>
+</html>
